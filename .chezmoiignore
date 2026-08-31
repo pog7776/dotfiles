@@ -3,3 +3,4 @@
 .config/tmuxai/tmuxai.log
 .config/tmuxai/.archive
 bootstrap.sh
+README.md
