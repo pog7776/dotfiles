@@ -1,0 +1,54 @@
+#!/bin/bash
+if command -v docker >/dev/null 2>&1; then
+  exit 0
+fi
+
+{{- $id := .chezmoi.osRelease.id }}
+case "{{ $id }}" in
+ubuntu|debian)
+  sudo apt-get update
+  sudo apt-get install -y ca-certificates curl
+  sudo install -m 0755 -d /etc/apt/keyrings
+  sudo curl -fsSL https://download.docker.com/linux/{{ $id }}/gpg -o /etc/apt/keyrings/docker.asc
+  sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+{{ if eq $id "ubuntu" -}}
+  CODENAME=$(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+{{- else -}}
+  CODENAME=$(. /etc/os-release && echo "$VERSION_CODENAME")
+{{- end }}
+
+  sudo tee /etc/apt/sources.list.d/docker.sources >/dev/null <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/{{ $id }}
+Suites: $CODENAME
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+  sudo apt-get update
+  sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  ;;
+arch)
+  sudo pacman -Sy --noconfirm docker docker-compose docker-buildx
+  sudo systemctl enable --now docker
+  ;;
+fedora)
+  sudo dnf config-manager addrepo --from-repofile https://download.docker.com/linux/fedora/docker-ce.repo
+  sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  sudo systemctl enable --now docker
+  ;;
+*)
+  echo "Unsupported distro '{{ $id }}' for Docker install - add support in run_once_install-docker.sh.tmpl" >&2
+  exit 1
+  ;;
+esac
+
+# Deliberately NOT adding the user to the docker group here: docker group
+# membership is root-equivalent (no sudo prompt, no audit trail, trivial
+# host-root escalation via bind-mounting `/` into a container). Use
+# `sudo docker ...` instead. Opt into passwordless docker manually and
+# deliberately if you ever decide the tradeoff is worth it on a given machine:
+#   sudo usermod -aG docker "$(whoami)"
+echo "Docker installed. Use 'sudo docker ...' to run it."

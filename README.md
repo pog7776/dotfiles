@@ -36,6 +36,7 @@ chezmoi init --apply pog7776/dotfiles
 | `run_once_install-oh-my-tmux.sh.tmpl` | Clones [gpakosz/.tmux](https://github.com/gpakosz/.tmux) and symlinks `~/.config/tmux/tmux.conf` to it. |
 | `run_once_install-zsh-plugins.sh` | Clones `zsh-autosuggestions`, `zsh-syntax-highlighting`, `fzf-tab`. |
 | `run_once_install-zsh-themes.sh` | Clones the `powerlevel10k` theme. |
+| `run_once_install-docker.sh.tmpl` | Installs Docker Engine (`docker-ce`) from Docker's official repo (ubuntu/debian/arch/fedora) if not already present. Skipped entirely if `docker` is already on `PATH`. Deliberately does *not* add the account to the `docker` group (root-equivalent access) — use `sudo docker ...`. |
 
 ## Cross-distro package installation
 
