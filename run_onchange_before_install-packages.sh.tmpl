@@ -1,5 +1,5 @@
 #!/bin/bash
-# packages hash: {{ "btop tmux fzf eza zoxide vim git curl" | sha256sum }}
+# packages hash: {{ "btop tmux fzf eza zoxide vim git curl zsh" | sha256sum }}
 sudo apt-get update
-sudo apt-get install -y btop tmux fzf zoxide vim git curl
+sudo apt-get install -y btop tmux fzf zoxide vim git curl zsh
 # eza isn't in default Ubuntu repos on all releases; install via cargo or their apt repo if `apt install eza` fails
