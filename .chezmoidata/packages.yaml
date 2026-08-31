@@ -1,0 +1,53 @@
+package_managers:
+  ubuntu:
+    update: "sudo apt-get update"
+    install: "sudo apt-get install -y"
+  debian:
+    update: "sudo apt-get update"
+    install: "sudo apt-get install -y"
+  arch:
+    install: "sudo pacman -Sy --noconfirm"
+  fedora:
+    install: "sudo dnf install -y"
+
+packages:
+  ubuntu:
+    - btop
+    - tmux
+    - fzf
+    - eza
+    - zoxide
+    - vim
+    - git
+    - curl
+    - zsh
+  debian:
+    - btop
+    - tmux
+    - fzf
+    - eza
+    - zoxide
+    - vim
+    - git
+    - curl
+    - zsh
+  arch:
+    - btop
+    - tmux
+    - fzf
+    - eza
+    - zoxide
+    - vim
+    - git
+    - curl
+    - zsh
+  fedora:
+    - btop
+    - tmux
+    - fzf
+    - eza
+    - zoxide
+    - vim
+    - git
+    - curl
+    - zsh

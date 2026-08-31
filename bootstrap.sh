@@ -8,8 +8,13 @@ set -e
 
 # Ensure curl and git are available (needed to fetch/install chezmoi and clone dotfiles)
 if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1; then
-  sudo apt-get update
-  sudo apt-get install -y curl git
+  . /etc/os-release
+  case "$ID" in
+    ubuntu|debian) sudo apt-get update && sudo apt-get install -y curl git ;;
+    arch) sudo pacman -Sy --noconfirm curl git ;;
+    fedora) sudo dnf install -y curl git ;;
+    *) echo "Unsupported distro '$ID' - install curl and git manually first." >&2; exit 1 ;;
+  esac
 fi
 
 # Install chezmoi into ~/.local/bin

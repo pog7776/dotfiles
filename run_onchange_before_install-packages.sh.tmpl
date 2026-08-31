@@ -1,5 +1,16 @@
+{{- $id := .chezmoi.osRelease.id -}}
+{{- $pm := index .package_managers $id -}}
+{{- $pkgs := index .packages $id -}}
+{{ if not $pm -}}
 #!/bin/bash
-# packages hash: {{ "btop tmux fzf eza zoxide vim git curl zsh" | sha256sum }}
-sudo apt-get update
-sudo apt-get install -y btop tmux fzf zoxide vim git curl zsh
-# eza isn't in default Ubuntu repos on all releases; install via cargo or their apt repo if `apt install eza` fails
+echo "Unsupported distro '{{ $id }}' - add an entry to .chezmoidata/packages.yaml" >&2
+exit 1
+{{ else -}}
+{{- $update := index $pm "update" -}}
+{{- $install := index $pm "install" -}}
+#!/bin/bash
+# packages hash: {{ $pkgs | join " " | sha256sum }}
+{{ if $update }}{{ $update }}
+{{ end -}}
+{{ $install }} {{ $pkgs | join " " }}
+{{ end -}}
