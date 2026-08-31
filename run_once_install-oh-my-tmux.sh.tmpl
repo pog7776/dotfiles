@@ -1,0 +1,7 @@
+#!/bin/bash
+OH_MY_TMUX_DIR="$HOME/.local/share/tmux/oh-my-tmux"
+if [ ! -d "$OH_MY_TMUX_DIR" ]; then
+  git clone --single-branch https://github.com/gpakosz/.tmux.git "$OH_MY_TMUX_DIR"
+fi
+mkdir -p "$HOME/.config/tmux"
+ln -sf "$OH_MY_TMUX_DIR/.tmux.conf" "$HOME/.config/tmux/tmux.conf"

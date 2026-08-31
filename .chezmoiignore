@@ -1,0 +1,4 @@
+.config/opencode/node_modules
+.config/tmuxai/history
+.config/tmuxai/tmuxai.log
+.config/tmuxai/.archive

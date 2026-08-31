@@ -1,0 +1,174 @@
+# Set to true to log full AI messages sent and received. Dest: ~/.config/tmuxai/debug/
+debug: false
+
+# Skip all confirmation prompts (use with caution!)
+yolo: false
+
+# Maximum context size in tokens, reaching 80% triggers squashing
+max_context_size: 100000
+
+# Interactive prompt/status line shown before input and status messages.
+# Empty uses the built-in prompt. Available placeholders:
+# {app}, {context}, {context_used}, {context_max}, {model}, {state}, {state_badge}, {model_changed}
+# Note: {model_changed} only produces output when using the models: config section.
+# Examples:
+#   "{app} ({context}) - {model} >> "
+#   "✨ ({context}) >> "
+# status_line: ""
+status_line: "{app} [{context}]-[{model}] » "
+
+# Maximum number of lines to capture during each message
+max_capture_lines: 50
+
+# Wait interval when exec pane is considered busy (used in observe and watch modes)
+wait_interval: 5
+
+# tmux pane split behavior for creating exec pane
+# Raw args passed to: tmux split-window <args...> -t <target> -P -F "#{pane_id}"
+# Reserved flags -t, -P, and -F are managed internally and must not be included here.
+# Default matches legacy behavior: detached horizontal split
+# Examples:
+#   ["-d", "-h"]                # horizontal split
+#   ["-d", "-v"]                # vertical split
+#   ["-d", "-v", "-p", "70"]  # vertical, 70%
+tmux:
+  exec_split_args: ["-d", "-h"]
+
+# If empty uses the first model alphabetically
+default_model: "smart"
+
+x-templates:
+  gemini_base: &gemini_base
+    provider: "gemini"
+    api_key: "${GOOGLE_API_KEY}"
+
+  ollama_base: &ollama_base
+    provider: "openrouter"
+    api_key: "ollama"
+    base_url: "http://localhost:11434/v1"
+    #max_context_size: 16384
+
+# Define at least one model
+models:
+  fast:
+    <<: *gemini_base
+    model: "gemini-3.5-flash-lite"
+
+  smart:
+    <<: *gemini_base
+    model: "gemini-3.7-flash"
+
+  local:
+    <<: *ollama_base
+    model: "qwen2.5-coder:7b"
+  thought-lma:
+    <<: *ollama_base
+    model: "llama3.1:8b"
+
+  thought-ds:
+    <<: *ollama_base
+    model: "deepseek-r1:8b"
+
+# Confirm before AI executes a command
+exec_confirm: true
+
+# Confirm before AI sends a key
+send_keys_confirm: true
+
+# Confirm before AI pastes a multiline text
+paste_multiline_confirm: true
+
+# If matched, skips confirmation prompt
+whitelist_patterns:
+  # Navigation & Directory Listing
+  - '^pwd\s*$'
+  - '^ls(\s+.*)?$'
+  - '^tree(\s+.*)?$'
+
+  # Search & Inspection
+  - '^find(\s+.*)?$'
+  - '^grep(\s+.*)?$'
+  - '^rg(\s+.*)?$'
+  - '^which(\s+.*)?$'
+  - '^whereis(\s+.*)?$'
+  - '^file(\s+.*)?$'
+  - '^stat(\s+.*)?$'
+
+  # File Viewing & Content Inspection
+  - '^cat(\s+.*)?$'
+  - '^head(\s+.*)?$'
+  - '^tail(\s+.*)?$'
+  - '^wc(\s+.*)?$'
+  - '^bat(\s+.*)?$'
+
+  # System Information
+  - '^uname(\s+.*)?$'
+  - '^uptime\s*$'
+  - '^whoami\s*$'
+  - '^id\s*$'
+  - '^df(\s+.*)?$'
+  - '^du(\s+.*)?$'
+  - '^ps(\s+.*)?$'
+
+  # Read-only Git Commands
+  - '^git\s+(status|log|diff|branch|show)(\s+.*)?$'
+
+# Always shows confirmation prompt for those patterns
+blacklist_patterns:
+  - 'rm\s+'
+  - 'mv\s+'
+  - 'dd\s+'
+  - '-delete'       # Catches find -delete
+  - '>\s*'          # Catches file overwrite/creation
+  - '>>\s*'         # Catches file append
+  - '\|\s*'         # Catches piping into un-whitelisted commands
+
+# Knowledge Base: Skills system (opt-in)
+knowledge_base:
+  skills:
+    enabled: true  # Disabled by default; set true to enable
+    auto_scan: true
+    auto_match: true
+    auto_match_threshold: 0.1  # Match sensitivity (0.0–1.0, lower = more aggressive)
+    max_l1_chars: 8000        # L1 discovery block char budget
+    max_loaded_chars: 32000   # Total loaded skill bodies char budget
+    max_skill_chars: 20000    # Per-skill char cap (set 0 for unlimited; 1MB hard limit)
+    truncate_desc_at: 200     # Truncate descriptions in L1 block
+
+# Prompts customization, see prompts.go for more details
+prompts:
+  base_system: |
+    xxx
+
+  chat_assistant: |
+     xxx
+
+  chat_assistant_prepared: |
+     xxx
+
+  watch: |
+     xxx
+
+# Web search: search the web via Brave Search API or self-hosted SearXNG
+# Use /websearch <query> or /websearch -f N <query> to auto-fetch top N results
+web_search:
+  enabled: true
+  default_provider: searxng
+  max_results: 5
+  max_result_chars: 6000     # Total char budget for search result snippets
+  fetch_max_chars: 15000    # Per-result char limit when auto-fetching with /websearch -f N
+  timeout_seconds: 10
+  providers:
+    brave:
+      api_key: "${BRAVE_API_KEY}"
+    searxng:
+      base_url: "http://127.0.0.1:8888"
+
+# Web fetch: extract readable content from a URL
+# Fallback chain: direct -> Wayback Machine -> Google Cache
+# Use /webfetch <url>
+web_fetch:
+  enabled: true
+  max_chars: 25000           # Char limit for /webfetch (direct URL fetch)
+  timeout_seconds: 8
+  allowed_redirects: false
