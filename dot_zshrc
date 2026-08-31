@@ -130,9 +130,5 @@ if [[ -n "$ZSH_START_TIME" ]]; then
   unset ZSH_START_TIME
 fi
 
-
-# Added by Antigravity CLI installer
-export PATH="/home/jack/.local/bin:$PATH"
-
 # opencode
 export PATH=/home/jack/.opencode/bin:$PATH
