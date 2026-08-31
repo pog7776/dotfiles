@@ -1,0 +1,4 @@
+#!/bin/bash
+if [ "$(basename "$SHELL")" != "zsh" ]; then
+  sudo chsh -s "$(command -v zsh)" "$(whoami)"
+fi
