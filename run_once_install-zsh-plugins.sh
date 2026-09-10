@@ -6,3 +6,4 @@ clone_if_missing() {
 clone_if_missing https://github.com/zsh-users/zsh-autosuggestions "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
 clone_if_missing https://github.com/zsh-users/zsh-syntax-highlighting "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
 clone_if_missing https://github.com/Aloxaf/fzf-tab "$ZSH_CUSTOM/plugins/fzf-tab"
+clone_if_missing https://github.com/jirutka/zsh-shift-select "$ZSH_CUSTOM/plugins/zsh-shift-select"

@@ -27,6 +27,64 @@
           }
         }
       }
+    },
+    "ollama-remote": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama-Remote",
+      "options": {
+        "baseURL": "http://100.92.61.14:11434/v1"
+      },
+      "models": {
+        "qwen2.5-coder:7b": {
+          "name": "qwen2.5-coder:7b",
+          "options": {
+            "num_ctx": 8192
+          }
+        },
+        "llama3.1:8b": {
+          "name": "llama3.1:8b",
+          "options": {
+            "num_ctx": 8192
+          }
+        },
+        "deepseek-r1:8b": {
+          "name": "deepseek-r1:8b",
+          "options": {
+            "num_ctx": 8192
+          }
+        },
+	"deepseek-r1:14b": {
+          "name": "deepseek-r1:14b",
+          "options": {
+            "num_ctx": 8192
+          }
+        }
+      }
     }
-  }
-}
+  },
+  "mcp": {
+    "unity-cli": {
+      "type": "local",
+      "command": ["unity", "mcp"],
+      "enabled": true
+    },
+    "rider-stdio": {
+      "type": "local",
+      "command": ["rider", "stdioMcpServer"],
+      "enabled": false
+    },
+    "rider-http-stream": {
+      "type": "remote",
+      "url": "http://127.0.0.1:64482/stream",
+      "enabled": true
+    },
+    "gle": {
+      "type": "remote",
+      "url": "http://127.0.0.1:7337/mcp",
+      "enabled": true
+    },
+    "atlassian": {
+      "type": "remote",
+      "url": "https://mcp.atlassian.com/v2/mcp",
+      "enabled": true
+    }

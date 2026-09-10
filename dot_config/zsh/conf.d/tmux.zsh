@@ -1,9 +1,15 @@
 # Oh My Zsh Tmux Plugin Configuration
 
 # Automatically start or reconnect to a session on shell launch
-export ZSH_TMUX_AUTOSTART=true
-# export ZSH_TMUX_AUTOCONNECT=true
+# Short-circuit logic (cleanest one-liner)
+[[ -z "$SSH_CONNECTION" && -z "$SSH_CLIENT" && -z "$TMUX" ]] && ZSH_TMUX_AUTOSTART=true || ZSH_TMUX_AUTOSTART=false
+export ZSH_TMUX_AUTOSTART
+
+#export ZSH_TMUX_AUTOCONNECT=true
+
 export ZSH_TMUX_AUTOSTART_ONCE=true
+
+export ZSH_TMUX_AUTOQUIT=false
 
 # Modern XDG path for your tmux configuration
 #export ZSH_TMUX_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/tmux/tmux.conf"
