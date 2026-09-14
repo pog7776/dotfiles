@@ -4,3 +4,8 @@
 .config/tmuxai/.archive
 bootstrap.sh
 README.md
+
+{{- if not (contains .chezmoi.kernel.osrelease "microsoft") }}
+dot_config/zsh/conf.d/windows.zsh
+dot_config/zsh/conf.d/windows/
+{{- end }}
