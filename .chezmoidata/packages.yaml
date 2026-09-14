@@ -1,14 +1,14 @@
 package_managers:
   ubuntu:
-    update: "sudo apt-get update"
-    install: "sudo apt-get install -y"
+    update: sudo apt-get update
+    install: sudo apt-get install -y
   debian:
-    update: "sudo apt-get update"
-    install: "sudo apt-get install -y"
+    update: sudo apt-get update
+    install: sudo apt-get install -y
   arch:
-    install: "sudo pacman -Sy --noconfirm"
+    install: sudo pacman -Sy --noconfirm
   fedora:
-    install: "sudo dnf install -y"
+    install: sudo dnf install -y
 
 packages:
   ubuntu:
@@ -21,6 +21,7 @@ packages:
     - git
     - curl
     - zsh
+    - fontconfig
   debian:
     - btop
     - tmux
@@ -31,6 +32,7 @@ packages:
     - git
     - curl
     - zsh
+    - fontconfig
   arch:
     - btop
     - tmux
@@ -41,6 +43,7 @@ packages:
     - git
     - curl
     - zsh
+    - fontconfig
   fedora:
     - btop
     - tmux
@@ -51,3 +54,4 @@ packages:
     - git
     - curl
     - zsh
+    - fontconfig
