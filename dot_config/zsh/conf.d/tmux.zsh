@@ -2,7 +2,7 @@
 
 # Automatically start or reconnect to a session on shell launch
 # Short-circuit logic (cleanest one-liner)
-[[ -z "$SSH_CONNECTION" && -z "$SSH_CLIENT" && -z "$TMUX" ]] && ZSH_TMUX_AUTOSTART=true || ZSH_TMUX_AUTOSTART=false
+[[ -t 0 && -t 1 && -z "$SSH_CONNECTION" && -z "$SSH_CLIENT" && -z "$TMUX" ]] && ZSH_TMUX_AUTOSTART=true || ZSH_TMUX_AUTOSTART=false
 export ZSH_TMUX_AUTOSTART
 
 #export ZSH_TMUX_AUTOCONNECT=true
