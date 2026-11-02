@@ -192,6 +192,7 @@
   # awesome-fontconfig mode's Android icon (U+E17B) isn't in Nerd Fonts; use Devicons'.
   typeset -g POWERLEVEL9K_ANDROID_ICON='\uE70E'
   typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=
+  [[ $OSTYPE == linux-android* ]] && typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND='#3DDC84'
   # Custom icon.
   # typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION='⭐'
 
