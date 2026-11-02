@@ -13,3 +13,7 @@ README.md
 {{- if eq .chezmoi.os "android" }}
 .ssh/authorized_keys
 {{- end }}
+
+{{- if ne .chezmoi.os "android" }}
+.config/zsh/conf.d/termux.zsh
+{{- end }}
