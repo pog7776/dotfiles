@@ -16,6 +16,7 @@ package_managers:
 
 packages:
   android:
+    - perl  # Oh My Tmux needs it; distros have it already
     - tmux
     - fzf
     - eza
