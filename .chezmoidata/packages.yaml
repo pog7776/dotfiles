@@ -1,6 +1,7 @@
 package_managers:
   android:
-    update: pkg update -y
+    # Termux doesn't support partial upgrades; installing alone can break curl
+    update: pkg upgrade -y
     install: pkg install -y
   ubuntu:
     update: sudo apt-get update
