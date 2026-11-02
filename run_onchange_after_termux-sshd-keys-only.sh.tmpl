@@ -1,0 +1,11 @@
+{{- if eq .chezmoi.os "android" -}}
+#!{{ template "bash-path" . }}
+set -e
+CONF="$PREFIX/etc/ssh/sshd_config.d/10-keys-only.conf"
+cat > "$CONF" <<'EOF'
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+EOF
+sshd -t
+pkill -HUP -x sshd || true
+{{- end }}
