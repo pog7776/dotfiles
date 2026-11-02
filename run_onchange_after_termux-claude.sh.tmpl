@@ -29,6 +29,8 @@ if [ -t 1 ]; then
 fi
 
 export TMPDIR="${TMPDIR:-/data/data/com.termux/files/usr/tmp}"
+# Tools fall back to /tmp for runtime files, which Termux doesn't have.
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-$TMPDIR}"
 # Its own updater would replace the patched binary with one that can't run here.
 export DISABLE_AUTOUPDATER=1
 export CLAUDE_CODE_SHELL_PREFIX="$BIN/claude-shell"
