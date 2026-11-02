@@ -34,15 +34,15 @@ chezmoi init --apply pog7776/dotfiles
 | `run_once_change-shell.sh.tmpl` | `chsh`s to zsh if the account's login shell isn't already zsh. |
 | `run_once_install-oh-my-zsh.sh.tmpl` | Installs oh-my-zsh (unattended, keeps the chezmoi-managed `.zshrc`). |
 | `run_once_install-oh-my-tmux.sh.tmpl` | Clones [gpakosz/.tmux](https://github.com/gpakosz/.tmux) and symlinks `~/.config/tmux/tmux.conf` to it. |
-| `run_once_install-zsh-plugins.sh` | Clones `zsh-autosuggestions`, `zsh-syntax-highlighting`, `fzf-tab`. |
-| `run_once_install-zsh-themes.sh` | Clones the `powerlevel10k` theme. |
+| `run_once_install-zsh-plugins.sh.tmpl` | Clones `zsh-autosuggestions`, `zsh-syntax-highlighting`, `fzf-tab`. |
+| `run_once_install-zsh-themes.sh.tmpl` | Clones the `powerlevel10k` theme. |
 | `run_once_install-docker.sh.tmpl` | Installs Docker Engine (`docker-ce`) from Docker's official repo (ubuntu/debian/arch/fedora) if not already present. Skipped entirely if `docker` is already on `PATH`. Deliberately does *not* add the account to the `docker` group (root-equivalent access) — use `sudo docker ...`. |
 
 ## Cross-distro package installation
 
 Package lists and install commands live in `.chezmoidata/packages.yaml`, keyed by
-distro (`ubuntu`, `debian`, `arch`, `fedora`). The install script is a generic lookup
-based on `.chezmoi.osRelease.id` — adding a new distro means editing the YAML data,
+distro (`ubuntu`, `debian`, `arch`, `fedora`, plus `android` for Termux). The install script is a generic lookup
+based on `.chezmoi.osRelease.id` (`.chezmoi.os` on Termux, which has no os-release) — adding a new distro means editing the YAML data,
 not the script. Unsupported distros fail with a clear error rather than a confusing
 `apt-get: command not found`.
 
@@ -55,3 +55,17 @@ chezmoi cd                # cd into the source dir (plain git repo)
 chezmoi edit ~/.zshrc     # edit the source copy of a managed file
 chezmoi execute-template < some_file.tmpl   # test a template's rendered output
 ```
+
+## Termux
+
+`bootstrap.sh` doesn't support Termux; install directly:
+
+```sh
+pkg install -y chezmoi git
+chezmoi init --apply pog7776/dotfiles
+```
+
+Docker is skipped, `.ssh/authorized_keys` isn't managed, and the font goes to
+`~/.termux/font.ttf`. Run scripts use a templated shebang because Android has no
+`/bin/bash`; it must keep rendering as `/bin/bash` elsewhere, since changing a
+script's rendered contents re-runs it on every machine.

@@ -1,3 +1,4 @@
+{{ if ne .chezmoi.os "android" -}}
 #!/bin/bash
 if command -v docker >/dev/null 2>&1; then
   exit 0
@@ -52,3 +53,4 @@ esac
 # deliberately if you ever decide the tradeoff is worth it on a given machine:
 #   sudo usermod -aG docker "$(whoami)"
 echo "Docker installed. Use 'sudo docker ...' to run it."
+{{ end -}}

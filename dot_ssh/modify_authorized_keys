@@ -1,0 +1,13 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- /* Adds GitHub keys to whatever is already there, so per-machine keys survive. */ -}}
+{{- $keys := .chezmoi.stdin -}}
+{{- if and $keys (not (hasSuffix "\n" $keys)) -}}
+{{-   $keys = print $keys "\n" -}}
+{{- end -}}
+{{- range concat (gitHubKeys "pog7776") (gitHubKeys "Trickle-Charge-bot") -}}
+{{-   $key := trim .Key -}}
+{{-   if not (contains $key $keys) -}}
+{{-     $keys = print $keys $key "\n" -}}
+{{-   end -}}
+{{- end -}}
+{{- $keys -}}

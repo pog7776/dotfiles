@@ -1,4 +1,4 @@
-#!/bin/bash
+#!{{ template "bash-path" . }}
 set -e
 
 FONTS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/fonts"
@@ -25,6 +25,12 @@ install_nerd_font() {
 
 # Install font families
 install_nerd_font "JetBrainsMono"
+{{- if eq .chezmoi.os "android" }}
+
+# Termux only reads ~/.termux/font.ttf
+mkdir -p "$HOME/.termux"
+cp "$FONTS_DIR/JetBrainsMonoNerd/JetBrainsMonoNerdFontMono-Regular.ttf" "$HOME/.termux/font.ttf"
+{{- end }}
 
 # Refresh font cache
 if command -v fc-cache >/dev/null 2>&1; then

@@ -1,14 +1,15 @@
-{{- $id := .chezmoi.osRelease.id -}}
+{{- $id := .chezmoi.os -}}
+{{- if .chezmoi.osRelease }}{{ $id = .chezmoi.osRelease.id }}{{ end -}}
 {{- $pm := index .package_managers $id -}}
 {{- $pkgs := index .packages $id -}}
 {{ if not $pm -}}
-#!/bin/bash
+#!{{ template "bash-path" . }}
 echo "Unsupported distro '{{ $id }}' - add an entry to .chezmoidata/packages.yaml" >&2
 exit 1
 {{ else -}}
 {{- $update := index $pm "update" -}}
 {{- $install := index $pm "install" -}}
-#!/bin/bash
+#!{{ template "bash-path" . }}
 # packages hash: {{ $pkgs | join " " | sha256sum }}
 {{ if $update }}{{ $update }}
 {{ end -}}

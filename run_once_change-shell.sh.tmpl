@@ -1,4 +1,8 @@
-#!/bin/bash
+#!{{ template "bash-path" . }}
 if [ "$(basename "$SHELL")" != "zsh" ]; then
+{{- if eq .chezmoi.os "android" }}
+  chsh -s zsh
+{{- else }}
   sudo chsh -s "$(command -v zsh)" "$(whoami)"
+{{- end }}
 fi

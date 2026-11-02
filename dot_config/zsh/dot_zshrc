@@ -1,3 +1,4 @@
+export PATH="$HOME/.npm-global/bin:$PATH"
 # Profile startup time
 zmodload zsh/datetime
 ZSH_START_TIME=$EPOCHREALTIME
@@ -108,6 +109,9 @@ source $ZSH/oh-my-zsh.sh
 # else
 #   export EDITOR='nvim'
 # fi
+
+export EDITOR=vim
+export VISUAL=vim
 
 # Compilation flags
 # export ARCHFLAGS="-arch $(uname -m)"

@@ -5,7 +5,11 @@
 bootstrap.sh
 README.md
 
-{{- if not (contains .chezmoi.kernel.osrelease "microsoft") }}
-dot_config/zsh/conf.d/windows.zsh
-dot_config/zsh/conf.d/windows/
+{{- if not (contains "microsoft" (lower (get .chezmoi.kernel "osrelease"))) }}
+.config/zsh/conf.d/windows.zsh
+.config/zsh/conf.d/windows/
+{{- end }}
+
+{{- if eq .chezmoi.os "android" }}
+.ssh/authorized_keys
 {{- end }}

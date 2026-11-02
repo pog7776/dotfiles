@@ -1,4 +1,4 @@
-#!/bin/bash
+#!{{ template "bash-path" . }}
 OH_MY_TMUX_DIR="$HOME/.local/share/tmux/oh-my-tmux"
 if [ ! -d "$OH_MY_TMUX_DIR" ]; then
   git clone --single-branch https://github.com/gpakosz/.tmux.git "$OH_MY_TMUX_DIR"
