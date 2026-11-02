@@ -1,0 +1,67 @@
+{{- if eq .chezmoi.os "android" -}}
+#!{{ template "bash-path" . }}
+set -e
+# In $PREFIX/bin because that's on PATH for non-interactive SSH too.
+cat > "$PREFIX/bin/adb-tcp-up" <<'SCRIPT'
+#!/data/data/com.termux/files/usr/bin/bash
+# Puts this tablet's adbd in TCP mode on 5555 and connects to it.
+# Android resets TCP mode on restart, and turning it back on needs an existing
+# adb connection, so this goes through Wireless Debugging.
+#   adb-tcp-up [--force] [wireless-debugging-port]
+# Exit: 0 connected, 3 Wireless Debugging not found, 4 not paired, 5 failed.
+TCP=127.0.0.1:5555
+force=; port=
+for a in "$@"; do
+  case $a in
+    --force) force=1 ;;
+    *) port=$a ;;
+  esac
+done
+
+ready() { [ "$(adb -s "$1" get-state 2>/dev/null)" = device ]; }
+
+if [ -z "$force" ]; then
+  adb connect "$TCP" >/dev/null 2>&1
+  if ready "$TCP"; then echo "already connected: $TCP"; exit 0; fi
+  adb disconnect "$TCP" >/dev/null 2>&1
+fi
+
+if [ -n "$port" ]; then
+  ports=$port
+else
+  ports=
+  for p in {32768..60999}; do
+    { : 3<>"/dev/tcp/127.0.0.1/$p"; } 2>/dev/null && ports="$ports $p"
+  done
+  if [ -z "$ports" ]; then
+    echo "Wireless Debugging not found: no open port in 32768-60999" >&2
+    exit 3
+  fi
+fi
+
+wifi=
+for p in $ports; do
+  adb connect "127.0.0.1:$p" >/dev/null 2>&1
+  if ready "127.0.0.1:$p"; then wifi=127.0.0.1:$p; break; fi
+  adb disconnect "127.0.0.1:$p" >/dev/null 2>&1
+done
+if [ -z "$wifi" ]; then
+  echo "could not connect on:$ports (not paired yet?)" >&2
+  exit 4
+fi
+
+adb -s "$wifi" tcpip 5555 >/dev/null 2>&1
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+  sleep 1
+  adb connect "$TCP" >/dev/null 2>&1
+  if ready "$TCP"; then
+    adb disconnect "$wifi" >/dev/null 2>&1
+    echo "connected: $TCP"
+    exit 0
+  fi
+done
+echo "adbd did not come back on $TCP" >&2
+exit 5
+SCRIPT
+chmod 755 "$PREFIX/bin/adb-tcp-up"
+{{- end }}

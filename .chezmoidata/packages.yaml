@@ -17,6 +17,8 @@ package_managers:
 packages:
   android:
     - perl  # Oh My Tmux needs it; distros have it already
+    - openssh  # sshd, started by conf.d/termux.zsh
+    - android-tools  # adb, for adb-tcp-up
     - tmux
     - fzf
     - eza

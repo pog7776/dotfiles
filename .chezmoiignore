@@ -17,3 +17,8 @@ README.md
 {{- if ne .chezmoi.os "android" }}
 .config/zsh/conf.d/termux.zsh
 {{- end }}
+
+{{- if ne .chezmoi.os "android" }}
+.termux/
+.termux/**
+{{- end }}
