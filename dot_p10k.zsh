@@ -189,6 +189,8 @@
 
   #################################[ os_icon: os identifier ]##################################
   # OS identifier color.
+  # awesome-fontconfig mode's Android icon (U+E17B) isn't in Nerd Fonts; use Font Awesome's.
+  typeset -g POWERLEVEL9K_ANDROID_ICON='\uF17B'
   typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=
   # Custom icon.
   # typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION='⭐'
