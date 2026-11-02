@@ -1,0 +1,225 @@
+{{- if eq .chezmoi.os "android" -}}
+#!{{ template "bash-path" . }}
+# Installs the Claude Code launcher and updater. The binary itself is a large
+# download, so this leaves that to running claude-update by hand.
+set -e
+cat > "$PREFIX/bin/claude" <<'SCRIPT'
+#!/data/data/com.termux/files/usr/bin/bash
+# Claude Code's glibc binary, run directly in Termux through glibc-runner's
+# loader. Installed and updated by claude-update.
+D=/data/data/com.termux/files/home/.local/share/claude-native
+BIN=/data/data/com.termux/files/usr/bin
+
+if [ ! -x "$D/current" ]; then
+  echo "Claude Code isn't installed. Run claude-update." >&2
+  exit 1
+fi
+
+case "${1:-}" in
+  update) exec "$BIN/claude-update" ;;
+esac
+
+if [ -t 1 ]; then
+  if [ -f "$D/last-failure" ]; then
+    echo "claude-update: $(cat "$D/last-failure")" >&2
+  fi
+  # Download and test any new version in the background, at most daily.
+  nohup "$BIN/claude-update" --auto >/dev/null 2>&1 &
+  disown
+fi
+
+export TMPDIR="${TMPDIR:-/data/data/com.termux/files/usr/tmp}"
+# Its own updater would replace the patched binary with one that can't run here.
+export DISABLE_AUTOUPDATER=1
+export CLAUDE_CODE_SHELL_PREFIX="$BIN/claude-shell"
+# Termux's bionic preload can't load into a glibc program.
+unset LD_PRELOAD
+exec "$D/current" "$@"
+SCRIPT
+cat > "$PREFIX/bin/claude-shell" <<'SCRIPT'
+#!/data/data/com.termux/files/usr/bin/bash
+# Restores Termux's preload for commands Claude runs, so /usr/bin/env shebangs work.
+# Claude passes the whole command as one string, written for its zsh snapshot.
+export LD_PRELOAD=/data/data/com.termux/files/usr/lib/libtermux-exec-ld-preload.so
+if [ $# -eq 1 ]; then exec /data/data/com.termux/files/usr/bin/zsh -c "$1"; fi
+exec "$@"
+SCRIPT
+cat > "$PREFIX/bin/claude-update" <<'SCRIPT'
+#!/data/data/com.termux/files/usr/bin/bash
+# Installs and updates the patched Claude Code binary used by `claude`.
+#   claude-update              update to the latest release
+#   claude-update --version V  switch to a specific release
+#   claude-update --rollback   return to the previous version and skip this one
+#   claude-update --status     show the installed version and any failure
+#   claude-update --auto       what `claude` runs in the background: at most daily
+#
+# A new version only becomes current after passing its checksum and smoke test.
+# On failure the current version stays, with logs in the logs folder.
+set -u
+
+D=/data/data/com.termux/files/home/.local/share/claude-native
+PFX=/data/data/com.termux/files/usr
+LD=$PFX/glibc/lib/ld-linux-aarch64.so.1
+PATCHELF=$PFX/glibc/bin/patchelf
+BASE=${CLAUDE_UPDATE_BASE:-https://downloads.claude.ai/claude-code-releases}
+MIN_FREE_KB=800000
+
+mkdir -p "$D/versions" "$D/logs" "$D/failed"
+
+say() { [ "$auto" = 1 ] || echo "$*"; echo "$(date '+%F %T') $*" >> "$D/logs/update.log"; }
+current() { [ -L "$D/current" ] && basename "$(readlink "$D/current")"; }
+
+# Runs a candidate with the same environment as the claude launcher.
+run_candidate() {
+  env -u LD_PRELOAD DISABLE_AUTOUPDATER=1 TMPDIR="$PFX/tmp" \
+    CLAUDE_CODE_SHELL_PREFIX="$PFX/bin/claude-shell" "$@" </dev/null
+}
+
+fail() {  # version, reason
+  say "$1 failed: $2"
+  : > "$D/failed/$1"
+  echo "update to $1 failed: $2. See $D/logs, or run claude-update to retry." > "$D/last-failure"
+  rm -f "$D/versions/.new-$1"
+  exit 1
+}
+
+# Failing the prompt test twice counts, in case of a network blip.
+prompt_test() {  # binary, log
+  local dir mark n out
+  dir=$(mktemp -d "$PFX/tmp/claude-smoke.XXXXXX") || return 1
+  mark="smoke-$RANDOM-$RANDOM"
+  printf '#!/usr/bin/env sh\necho %s\n' "$mark" > "$dir/smoke.sh"
+  chmod +x "$dir/smoke.sh"
+  for n in 1 2; do
+    out=$(cd "$dir" && run_candidate timeout 180 "$1" --model haiku --allowedTools Bash \
+      -p "Use the Bash tool to run ./smoke.sh, then reply with its exact output." 2>&1)
+    echo "$out" >> "$2"
+    case "$out" in
+      *"$mark"*) rm -rf "$dir"; return 0 ;;
+      *"Not logged in"*) say "not signed in, so skipping the prompt test"; rm -rf "$dir"; return 0 ;;
+    esac
+  done
+  rm -rf "$dir"
+  return 1
+}
+
+smoke_test() {  # version, binary
+  local log="$D/logs/smoke-$1.log"
+  : > "$log"
+  run_candidate timeout 60 "$2" --version >> "$log" 2>&1 || return 1
+  grep -qF "$1" "$log" || return 1
+  run_candidate timeout 120 "$2" doctor >> "$log" 2>&1 || return 1
+  prompt_test "$2" "$log"
+}
+
+auto=0; target=; rollback=0; status=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --auto) auto=1 ;;
+    --rollback) rollback=1 ;;
+    --status) status=1 ;;
+    --version) target=${2:-}; shift ;;
+    *) echo "unknown option: $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+
+if [ "$status" = 1 ]; then
+  echo "current: $(current)"
+  echo "previous: $(cat "$D/previous" 2>/dev/null)"
+  [ -f "$D/last-failure" ] && cat "$D/last-failure"
+  exit 0
+fi
+
+if [ ! -x "$PATCHELF" ] || [ ! -x "$LD" ]; then
+  [ "$auto" = 0 ] || exit 0
+  echo "Installing glibc-runner..."
+  pkg install -y glibc-repo && pkg update -y && pkg install -y glibc-runner patchelf-glibc || exit 1
+fi
+
+# Only one run at a time. A lock older than an hour was left by a killed run.
+find "$D/lock" -maxdepth 0 -mmin +60 -exec rmdir {} \; 2>/dev/null
+mkdir "$D/lock" 2>/dev/null || { [ "$auto" = 1 ] || echo "claude-update is already running" >&2; exit 0; }
+trap 'rmdir "$D/lock"' EXIT
+
+if [ "$rollback" = 1 ]; then
+  cur=$(current); prev=$(cat "$D/previous" 2>/dev/null)
+  if [ -z "$prev" ] || [ ! -x "$D/versions/$prev" ]; then
+    echo "no previous version to roll back to" >&2
+    exit 1
+  fi
+  : > "$D/failed/$cur"
+  ln -sfn "versions/$prev" "$D/current"
+  rm -f "$D/previous"
+  say "rolled back from $cur to $prev; auto updates will skip $cur"
+  exit 0
+fi
+
+if [ "$auto" = 1 ]; then
+  [ -n "$(find "$D/last-check" -mmin -1440 2>/dev/null)" ] && exit 0
+  touch "$D/last-check"
+fi
+
+if [ -z "$target" ]; then
+  target=$(curl -fsSL --max-time 30 "$BASE/latest") || { say "couldn't check for updates"; exit 1; }
+fi
+case "$target" in
+  [0-9]*.[0-9]*.[0-9]*) ;;
+  *) say "unexpected version: $target"; exit 1 ;;
+esac
+case "$target" in
+  *[!0-9.]*) say "unexpected version: $target"; exit 1 ;;
+esac
+
+cur=$(current)
+if [ "$target" = "$cur" ]; then
+  say "$cur is current"
+  rm -f "$D/last-failure"
+  exit 0
+fi
+if [ "$auto" = 1 ] && [ -e "$D/failed/$target" ]; then
+  exit 0
+fi
+
+bin="$D/versions/$target"
+if [ ! -x "$bin" ]; then
+  free_kb=$(df -Pk "$D" | awk 'NR==2 {print $4}')
+  [ "$free_kb" -ge "$MIN_FREE_KB" ] || { say "not enough disk space for $target"; exit 1; }
+
+  say "downloading $target"
+  new="$D/versions/.new-$target"
+  manifest=$(curl -fsSL --max-time 60 "$BASE/$target/manifest.json") || { say "couldn't fetch the manifest for $target"; exit 1; }
+  block=$(printf '%s\n' "$manifest" | sed -n '/"linux-arm64"/,/}/p')
+  want=$(printf '%s\n' "$block" | sed -n 's/.*"checksum": *"\([0-9a-f]\{64\}\)".*/\1/p')
+  [ -n "$want" ] || fail "$target" "no linux-arm64 checksum in its manifest"
+  curl -fsSL --max-time 1800 "$BASE/$target/linux-arm64/claude" -o "$new" || { rm -f "$new"; say "download of $target failed"; exit 1; }
+  got=$(sha256sum "$new" | cut -d' ' -f1)
+  [ "$got" = "$want" ] || fail "$target" "checksum mismatch"
+
+  # Only the interpreter: also setting the rpath makes the binary segfault.
+  chmod 700 "$new"
+  env -u LD_PRELOAD "$LD" --library-path "$PFX/glibc/lib" "$PATCHELF" --set-interpreter "$LD" "$new" \
+    >> "$D/logs/smoke-$target.log" 2>&1 || fail "$target" "patchelf couldn't patch it"
+  mv "$new" "$bin"
+fi
+
+say "testing $target"
+if ! smoke_test "$target" "$bin"; then
+  rm -f "$bin"
+  fail "$target" "smoke test"
+fi
+
+ln -sfn "versions/$target" "$D/current"
+[ -z "$cur" ] || echo "$cur" > "$D/previous"
+rm -f "$D/last-failure" "$D/failed/$target"
+
+# Keep only the current and previous versions.
+prev=$(cat "$D/previous" 2>/dev/null)
+for f in "$D"/versions/*; do
+  v=$(basename "$f")
+  [ "$v" = "$target" ] || [ "$v" = "$prev" ] || rm -f "$f"
+done
+say "now on $target"
+SCRIPT
+chmod 755 "$PREFIX/bin/claude" "$PREFIX/bin/claude-shell" "$PREFIX/bin/claude-update"
+{{- end }}

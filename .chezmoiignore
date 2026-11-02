@@ -3,6 +3,7 @@
 .config/tmuxai/tmuxai.log
 .config/tmuxai/.archive
 bootstrap.sh
+termux-ubuntu-setup.sh
 README.md
 
 {{- if not (contains "microsoft" (lower (get .chezmoi.kernel "osrelease"))) }}
@@ -21,4 +22,9 @@ README.md
 {{- if ne .chezmoi.os "android" }}
 .termux/
 .termux/**
+{{- end }}
+
+{{- if ne .chezmoi.os "android" }}
+.claude
+.claude/**
 {{- end }}
