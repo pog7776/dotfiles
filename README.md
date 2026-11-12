@@ -26,7 +26,7 @@ that machine's `~/.config/chezmoi/chezmoi.toml` (`.chezmoi.toml.tmpl`):
 | Role | For | Differences |
 |---|---|---|
 | `workstation` | personal machines (default) | everything |
-| `server` | headless boxes (sulaco, z10) | no fonts, opencode, tmuxai or p4; Claude's SSH key added to `authorized_keys` |
+| `server` | headless boxes (sulaco, z10) | no fonts, opencode, tmuxai or p4; jack-agent key added to `authorized_keys` |
 | `thin` | thin clients | no opencode, tmuxai or p4 |
 | `termux` | Android | chosen automatically |
 
