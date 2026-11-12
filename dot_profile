@@ -25,3 +25,8 @@ fi
 if [ -d "$HOME/.local/bin" ] ; then
     PATH="$HOME/.local/bin:$PATH"
 fi
+
+# JetBrains Toolbox scripts (only where Toolbox is installed)
+if [ -d "$HOME/.local/share/JetBrains/Toolbox/scripts" ] ; then
+    PATH="$PATH:$HOME/.local/share/JetBrains/Toolbox/scripts"
+fi
