@@ -1,15 +1,20 @@
 {{- /* chezmoi:modify-template */ -}}
 {{- /* Adds keys to whatever is already there, so per-machine keys survive:
-       - GitHub keys of pog7776 and Trickle-Charge-bot (every machine)
-       - ssh_extra_keys from .chezmoidata/hosts.yaml whose roles include this machine's role */ -}}
+       - GitHub keys of the ssh_github_users and
+       - the ssh_extra_keys from .chezmoidata/hosts.yaml
+       whose roles include this machine's role */ -}}
 {{- $role := get . "role" | default "workstation" -}}
 {{- $keys := .chezmoi.stdin -}}
 {{- if and $keys (not (hasSuffix "\n" $keys)) -}}
 {{-   $keys = print $keys "\n" -}}
 {{- end -}}
 {{- $want := list -}}
-{{- range concat (gitHubKeys "pog7776") (gitHubKeys "Trickle-Charge-bot") -}}
-{{-   $want = append $want (trim .Key) -}}
+{{- range .ssh_github_users -}}
+{{-   if has $role .roles -}}
+{{-     range gitHubKeys .user -}}
+{{-       $want = append $want (trim .Key) -}}
+{{-     end -}}
+{{-   end -}}
 {{- end -}}
 {{- range .ssh_extra_keys -}}
 {{-   if has $role .roles -}}

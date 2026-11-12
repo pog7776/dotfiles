@@ -10,8 +10,17 @@ tmux_accent:
   system-z10: "#af87ff" # purple
   muthur: "#5fd700"    # MU/TH/UR terminal green
 
-# Extra SSH public keys added to ~/.ssh/authorized_keys by role, on top of the
-# GitHub keys in dot_ssh/modify_authorized_keys. Existing keys are never removed.
+# SSH keys added to ~/.ssh/authorized_keys (private_dot_ssh/modify_private_authorized_keys).
+# Keys are only ever added; existing ones are never removed.
+
+# GitHub accounts whose public keys are added, by machine role.
+ssh_github_users:
+  - user: pog7776
+    roles: [workstation, server, thin, termux]
+  - user: Trickle-Charge-bot   # agents (e.g. hermes-agent@System-Z10); not on servers until their access is sorted
+    roles: [workstation, thin, termux]
+
+# Extra individual keys, by machine role.
 ssh_extra_keys:
   - name: claude@tricklecharge
     key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBDL8IEJ1UMOObPmsgkbWBhL3ygrEBu9WLSeyB72mvek claude@tricklecharge
