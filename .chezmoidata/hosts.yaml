@@ -22,6 +22,9 @@ ssh_github_users:
 
 # Extra individual keys, by machine role.
 ssh_extra_keys:
+  - name: jack-agent   # Jack's key lent to agents he's driving (1Password: Agents vault). Logs in as Jack, no extra rights.
+    key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHZTsYb+gQbIRSjiEGb14P+KOkAUkCt2aC/tRNEDY82v jack-agent
+    roles: [server]
   - name: claude@tricklecharge
     key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBDL8IEJ1UMOObPmsgkbWBhL3ygrEBu9WLSeyB72mvek claude@tricklecharge
     roles: [server]
