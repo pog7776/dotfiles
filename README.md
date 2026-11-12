@@ -18,10 +18,36 @@ If you already have chezmoi installed, you can skip straight to:
 chezmoi init --apply pog7776/dotfiles
 ```
 
+## Machine roles
+
+The first `chezmoi init` on a machine asks for its **role**, which is stored in
+that machine's `~/.config/chezmoi/chezmoi.toml` (`.chezmoi.toml.tmpl`):
+
+| Role | For | Differences |
+|---|---|---|
+| `workstation` | personal machines (default) | everything |
+| `server` | headless boxes (sulaco, z10) | no fonts, opencode, tmuxai or p4; Claude's SSH key added to `authorized_keys` |
+| `thin` | thin clients | no opencode, tmuxai or p4 |
+| `termux` | Android | chosen automatically |
+
+Skip the prompt with `ROLE=server` for `bootstrap.sh`, or with
+`chezmoi init --promptChoice "Machine role=server" ...`. To change a machine's
+role, run `chezmoi init --promptChoice "Machine role=<role>"` again.
+
+Per-host settings live in `.chezmoidata/hosts.yaml`: the tmux accent colour (so you can
+tell which host's tmux you're in) and extra SSH keys by role.
+
+## tmux over SSH
+
+- `tsh HOST [SESSION]` attaches to (or creates) a persistent session on a server.
+- **F12** turns the local tmux "off", so keys go to the server's tmux inside it.
+  The status bar shows `[OFF → inner tmux]`; press F12 again to return.
+
 ## What's managed here
 
 - **Shell**: `.zshrc`, `.config/zsh/` (`config.zsh` + `conf.d/*.zsh` modules), `.bashrc`, `.profile`
-- **tmux**: `.config/tmux/tmux.conf.local`
+- **tmux**: `.config/tmux/tmux.conf.local` (template: per-host accent, F12 toggle)
+- **SSH**: `.ssh/authorized_keys` (merged rather than replaced: GitHub keys of pog7776 and Trickle-Charge-bot, plus role-based extras)
 - **btop**: `.config/btop/btop.conf`
 - **tmuxai**: `.config/tmuxai/config.yaml`, skills
 - **opencode**: `.config/opencode/opencode.jsonc`, `package.json`

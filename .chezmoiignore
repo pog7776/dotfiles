@@ -28,3 +28,21 @@ README.md
 .claude
 .claude/**
 {{- end }}
+
+{{- /* Machine role (see .chezmoi.toml.tmpl). Missing = workstation. */ -}}
+{{- $role := get . "role" | default "workstation" }}
+
+{{- if or (eq $role "server") (eq $role "thin") }}
+# no dev / AI tooling on servers and thin clients
+.config/opencode
+.config/opencode/**
+.config/tmuxai
+.config/tmuxai/**
+.config/zsh/conf.d/p4.zsh
+{{- end }}
+
+{{- if eq $role "server" }}
+# headless: fonts render on the client, not the server
+.local/share/fonts
+install-fonts.sh
+{{- end }}

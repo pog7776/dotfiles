@@ -4,6 +4,11 @@
 #
 # Usage:
 #   sh -c "$(curl -fsLS https://raw.githubusercontent.com/pog7776/dotfiles/main/bootstrap.sh)"
+#
+# Optional environment:
+#   ROLE=server|workstation|thin|termux   skip the role prompt (see .chezmoi.toml.tmpl)
+#   BRANCH=<branch>                       apply a branch other than the default
+# e.g. ROLE=server sh -c "$(curl -fsLS .../bootstrap.sh)"
 set -e
 
 # Ensure curl and git are available (needed to fetch/install chezmoi and clone dotfiles)
@@ -22,4 +27,7 @@ sh -c "$(curl -fsLS https://get.chezmoi.io)" -- -b "$HOME/.local/bin"
 
 # Clone and apply dotfiles (this in turn runs the run_once_/run_onchange_ scripts,
 # which install zsh, oh-my-zsh, oh-my-tmux, zsh plugins, and remaining packages)
-"$HOME/.local/bin/chezmoi" init --apply pog7776/dotfiles
+set -- init --apply
+[ -n "$ROLE" ] && set -- "$@" --promptChoice "Machine role=$ROLE"
+[ -n "$BRANCH" ] && set -- "$@" --branch "$BRANCH"
+"$HOME/.local/bin/chezmoi" "$@" pog7776/dotfiles

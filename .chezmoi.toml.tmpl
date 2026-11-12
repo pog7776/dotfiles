@@ -1,0 +1,12 @@
+{{- /* Machine role, asked once per machine and stored in its local config.
+       workstation: full personal setup (default)
+       server:      headless box: shell + tmux, no fonts or desktop/dev tooling
+       thin:        thin client: personal shell, no dev tooling
+       termux:      Android (Termux); picked automatically there
+     Non-interactive: chezmoi init --promptChoice "Machine role=server" ... */ -}}
+{{- $roles := list "workstation" "server" "thin" "termux" -}}
+{{- $default := "workstation" -}}
+{{- if eq .chezmoi.os "android" }}{{ $default = "termux" }}{{ end -}}
+{{- $role := promptChoiceOnce . "role" "Machine role" $roles $default -}}
+[data]
+    role = {{ $role | quote }}

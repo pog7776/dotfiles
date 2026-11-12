@@ -28,5 +28,10 @@ else
   export ZSH_TMUX_AUTONAME_SESSION=true
 fi
 
+# tsh HOST [SESSION]: attach to (or create) a persistent tmux session on a server.
+# The session survives disconnects, and Claude can read it with capture-pane.
+# From inside local tmux, press F12 first so keys go to the server's tmux.
+tsh() { ssh -t "$1" "tmux new -A -s ${2:-main}"; }
+
 # Load the plugin
 plugins+=(tmux)

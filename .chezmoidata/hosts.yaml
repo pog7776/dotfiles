@@ -1,0 +1,18 @@
+# Per-host settings. Keys are lowercase hostnames.
+
+# tmux accent colour (current window, active pane border, hostname segment), so
+# nested or side-by-side sessions show which machine they're on at a glance.
+tmux_accent:
+  default: "#00afff"   # light blue (the original theme colour)
+  jackpad: "#00afff"
+  nostromo: "#ffd700"  # gold
+  sulaco: "#ff8700"    # orange
+  system-z10: "#af87ff" # purple
+  muthur: "#5fd700"    # MU/TH/UR terminal green
+
+# Extra SSH public keys added to ~/.ssh/authorized_keys by role, on top of the
+# GitHub keys in dot_ssh/modify_authorized_keys. Existing keys are never removed.
+ssh_extra_keys:
+  - name: claude@tricklecharge
+    key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBDL8IEJ1UMOObPmsgkbWBhL3ygrEBu9WLSeyB72mvek claude@tricklecharge
+    roles: [server]

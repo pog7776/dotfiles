@@ -1,12 +1,26 @@
 {{- /* chezmoi:modify-template */ -}}
-{{- /* Adds GitHub keys to whatever is already there, so per-machine keys survive. */ -}}
+{{- /* Adds keys to whatever is already there, so per-machine keys survive:
+       - GitHub keys of pog7776 and Trickle-Charge-bot (every machine)
+       - ssh_extra_keys from .chezmoidata/hosts.yaml whose roles include this machine's role */ -}}
+{{- $role := get . "role" | default "workstation" -}}
 {{- $keys := .chezmoi.stdin -}}
 {{- if and $keys (not (hasSuffix "\n" $keys)) -}}
 {{-   $keys = print $keys "\n" -}}
 {{- end -}}
+{{- $want := list -}}
 {{- range concat (gitHubKeys "pog7776") (gitHubKeys "Trickle-Charge-bot") -}}
-{{-   $key := trim .Key -}}
-{{-   if not (contains $key $keys) -}}
+{{-   $want = append $want (trim .Key) -}}
+{{- end -}}
+{{- range .ssh_extra_keys -}}
+{{-   if has $role .roles -}}
+{{-     $want = append $want (trim .key) -}}
+{{-   end -}}
+{{- end -}}
+{{- range $want -}}
+{{-   $key := . -}}
+{{- /* match on type + base64 only, so a key with a different comment isn't added twice */ -}}
+{{-   $core := join " " (slice (splitList " " $key) 0 2) -}}
+{{-   if not (contains $core $keys) -}}
 {{-     $keys = print $keys $key "\n" -}}
 {{-   end -}}
 {{- end -}}
